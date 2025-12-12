@@ -1,115 +1,142 @@
-// src/screens/HomeScreen.js
+/*
+  Course: MAD201
+  Project: Project 02
+  Student: Darshilkumar Karkar (A00203357)
+  Description: The main dashboard displaying the current balance, income, expense totals, and navigation buttons.
+*/
+
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useIsFocused } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getFinancialSummary } from './api'; // Import API
 
+/**
+ * Home Screen Component - Displays the dashboard with financial summaries.
+ */
 const HomeScreen = ({ navigation }) => {
-  const isFocused = useIsFocused();
-  const [totalIncome, setTotalIncome] = useState(0);
-  const [totalExpense, setTotalExpense] = useState(0);
-  const [balance, setBalance] = useState(0);
+  const [data, setData] = useState({ income: 0, expense: 0, balance: 0 });
+  const [isDark, setIsDark] = useState(false);
+  const [currencySymbol, setCurrencySymbol] = useState('$');
 
-  // Load data whenever the screen comes into focus
-  useEffect(() => {
-    if (isFocused) {
+  useFocusEffect(
+    useCallback(() => {
+      /**
+       * Loads financial data and settings (theme/currency) from storage.
+       */
+      const loadData = async () => {
+        const theme = await AsyncStorage.getItem('theme');
+        const curr = await AsyncStorage.getItem('currency');
+        const result = await getFinancialSummary();
+        
+        setIsDark(theme === 'dark');
+        if (curr === 'EUR') setCurrencySymbol('€');
+        else if (curr === 'GBP') setCurrencySymbol('£');
+        else setCurrencySymbol('$');
+        setData(result);
+      };
       loadData();
-    }
-  }, [isFocused]);
-
-  const loadData = async () => {
-    try {
-      const storedData = await AsyncStorage.getItem('transactions');
-      if (storedData) {
-        const transactions = JSON.parse(storedData);
-        let inc = 0;
-        let exp = 0;
-
-        transactions.forEach(t => {
-          if (t.type === 'Income') inc += parseFloat(t.amount);
-          else exp += parseFloat(t.amount);
-        });
-
-        setTotalIncome(inc);
-        setTotalExpense(exp);
-        setBalance(inc - exp);
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    }, [])
+  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.headerTitle}>Dashboard</Text>
+    <ScrollView contentContainerStyle={[styles.container, isDark && styles.darkContainer]}>
+      <View style={styles.header}>
+        <Text style={[styles.greeting, isDark && styles.darkText]}>Welcome Back!</Text>
+        <Text style={[styles.subGreeting, isDark && styles.darkSubText]}>Here is your budget summary</Text>
+      </View>
 
       {/* Balance Card */}
-      <View style={[styles.card, styles.balanceCard]}>
-        <Text style={styles.cardLabel}>Current Balance</Text>
-        <Text style={styles.cardAmount}>${balance.toFixed(2)}</Text>
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardLabel}>Total Balance</Text>
+          <Ionicons name="wallet-outline" size={24} color="rgba(255,255,255,0.8)" />
+        </View>
+        <Text style={styles.balanceText}>{currencySymbol}{data.balance.toFixed(2)}</Text>
+        <View style={styles.row}>
+          <View style={styles.statColumn}>
+            <Text style={styles.incomeLabel}><Ionicons name="arrow-down" size={12} /> Income</Text>
+            <Text style={styles.incomeValue}>+{currencySymbol}{data.income.toFixed(2)}</Text>
+          </View>
+          <View style={styles.statColumn}>
+            <Text style={styles.expenseLabel}><Ionicons name="arrow-up" size={12} /> Expense</Text>
+            <Text style={styles.expenseValue}>-{currencySymbol}{data.expense.toFixed(2)}</Text>
+          </View>
+        </View>
       </View>
 
-      <View style={styles.row}>
-        {/* Income Card */}
-        <View style={[styles.card, styles.incomeCard]}>
-          <Text style={styles.cardLabel}>Income</Text>
-          <Text style={styles.cardAmount}>+${totalIncome.toFixed(2)}</Text>
-        </View>
+      {/* Action Buttons */}
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.primaryButton]} 
+          onPress={() => navigation.navigate('AddTransaction')}
+        >
+          <Ionicons name="add-circle-outline" size={24} color="#fff" style={styles.btnIcon} />
+          <Text style={styles.primaryButtonText}>Add Transaction</Text>
+        </TouchableOpacity>
 
-        {/* Expense Card */}
-        <View style={[styles.card, styles.expenseCard]}>
-          <Text style={styles.cardLabel}>Expenses</Text>
-          <Text style={styles.cardAmount}>-${totalExpense.toFixed(2)}</Text>
-        </View>
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.secondaryButton, isDark && styles.darkSecondaryButton]} 
+          onPress={() => navigation.navigate('TransactionList')}
+        >
+          <Ionicons name="list-outline" size={24} color={isDark ? '#fff' : '#333'} style={styles.btnIcon} />
+          <Text style={[styles.secondaryButtonText, isDark && styles.darkSecondaryButtonText]}>View All History</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.secondaryButton, isDark && styles.darkSecondaryButton]} 
+          onPress={() => navigation.navigate('Reports')}
+        >
+          <Ionicons name="pie-chart-outline" size={24} color={isDark ? '#fff' : '#333'} style={styles.btnIcon} />
+          <Text style={[styles.secondaryButtonText, isDark && styles.darkSecondaryButtonText]}>View Reports</Text>
+        </TouchableOpacity>
       </View>
-
-      {/* Navigation Buttons */}
-      <TouchableOpacity 
-        style={styles.btn} 
-        onPress={() => navigation.navigate('Add')}>
-        <Text style={styles.btnText}>Add New Transaction</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        style={[styles.btn, styles.secondaryBtn]} 
-        onPress={() => navigation.navigate('Transactions')}>
-        <Text style={styles.secondaryBtnText}>View All Transactions</Text>
-      </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f4f4f4' },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  container: { flexGrow: 1, padding: 20, backgroundColor: '#f5f5f5' },
+  darkContainer: { backgroundColor: '#121212' },
+  header: { marginBottom: 20, marginTop: 10 },
+  greeting: { fontSize: 28, fontWeight: 'bold', color: '#333' },
+  darkText: { color: '#fff' },
+  subGreeting: { fontSize: 16, color: '#666' },
+  darkSubText: { color: '#aaa' },
   card: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 15,
     padding: 20,
-    borderRadius: 10,
-    marginBottom: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 3, // Shadow for Android
-    shadowColor: '#000', // Shadow for iOS
-    shadowOffset: { width: 0, height: 2 },
+    marginBottom: 30,
+    shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  balanceCard: { backgroundColor: '#4a90e2' },
-  incomeCard: { backgroundColor: '#2ecc71', flex: 1, marginRight: 10 },
-  expenseCard: { backgroundColor: '#e74c3c', flex: 1, marginLeft: 10 },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
-  cardLabel: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  cardAmount: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginTop: 5 },
-  btn: {
-    backgroundColor: '#34495e',
-    padding: 15,
-    borderRadius: 8,
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardLabel: { color: '#e8f5e9', fontSize: 14 },
+  balanceText: { color: '#fff', fontSize: 36, fontWeight: 'bold', marginVertical: 10 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
+  statColumn: { flex: 1 },
+  incomeLabel: { color: '#e8f5e9', fontSize: 12 },
+  incomeValue: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  expenseLabel: { color: '#ffcdd2', fontSize: 12 },
+  expenseValue: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonContainer: { gap: 15 },
+  actionButton: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    padding: 15,
+    borderRadius: 12,
   },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  secondaryBtn: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#34495e' },
-  secondaryBtnText: { color: '#34495e', fontSize: 16 },
+  primaryButton: { backgroundColor: '#333', justifyContent: 'center' },
+  primaryButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  btnIcon: { marginRight: 10 },
+  secondaryButton: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd' },
+  secondaryButtonText: { color: '#333', fontSize: 16, fontWeight: 'bold' },
+  darkSecondaryButton: { backgroundColor: '#333', borderColor: '#555' },
+  darkSecondaryButtonText: { color: '#fff' },
 });
 
 export default HomeScreen;
