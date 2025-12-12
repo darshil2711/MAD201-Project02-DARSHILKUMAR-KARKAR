@@ -1,50 +1,66 @@
-# Welcome to your Expo app 👋
+# MAD201-01 Cross Platform Mobile App Development - Project 2
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Smart Budget Tracker Lite
 
-## Get started
+## Student: Darshilkumar Karkar (A00203357)
 
-1. Install dependencies
+### Overview
 
-   ```bash
-   npm install
-   ```
+**Smart Budget Tracker Lite** is a React Native application that allows users to track their daily income and expenses, view their current balance, and visualize their spending habits. The app persists data locally on the device and integrates with a live currency API.
 
-2. Start the app
+### App Concept
 
-   ```bash
-   npx expo start
-   ```
+The app lets users track daily income and expenses and view their current balance.
 
-In the output, you'll find options to open the app in a
+### Features
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+* **Dashboard**: View total income, expenses, and current balance at a glance.
+* **Transaction Tracking**: Add income or expense transactions with categories.
+* **History**: View a list of all past transactions with the ability to delete them.
+* **Reports**: Visual summary of expenses by category.
+* **Settings**:
+  * Toggle between **Light** and **Dark** themes.
+  * Select currency (USD, EUR, GBP).
+  * View live exchange rates fetched from an API.
+* **Local Storage**: Data is saved persistently using AsyncStorage.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Technologies Used
 
-## Get a fresh project
+* **Framework**: React Native (Expo)
+* **Navigation**: React Navigation (Stack + Bottom Tabs)
+* **Styling**: Flexbox, StyleSheet
+* **Icons**: Ionicons (@expo/vector-icons)
+* **Storage**: AsyncStorage
+* **API**: ExchangeRate-API
 
-When you're ready, run:
+### Setup and Installation
 
-```bash
-npm run reset-project
-```
+1. **Clone the repository**:
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/MAD201-Project02-YOURNAME.git
+    cd MAD201-Project02-YOURNAME
+    ```
 
-## Learn more
+2. **Install dependencies**:
 
-To learn more about developing your project with Expo, look at the following resources:
+    ```bash
+    npm install
+    ```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+3. **Run the application**:
 
-## Join the community
+    ```bash
+    npx expo start
+    ```
 
-Join our community of developers creating universal apps.
+4. **Run on Device/Emulator**:
+    * Press `a` for Android Emulator.
+    * Press `i` for iOS Simulator.
+    * Scan the QR code with the Expo Go app on a physical device.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Project Structure
+
+* `App.js`: Main entry point and Navigation setup.
+* `src/screens/`: Contains all application screens (Home, AddTransaction, Reports, Settings, etc.).
+* `src/screens/api.js`: Handles AsyncStorage operations and API calls.
